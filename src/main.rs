@@ -1,6 +1,7 @@
-mod generator;
+pub(crate) mod instruments;
+pub(crate) mod oscillator;
+pub(crate) mod sound;
 
-use crate::generator::*;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Result<(), anyhow::Error>
@@ -11,24 +12,33 @@ where
     let channels = config.channels as usize;
 
     // Create a logical clock
-    let mut clock = Clock::new(sample_rate);
-    // Produce a sinusoid of maximum amplitude.
-    let mut freq = 220.0;
-    let osc = SineWave::new(freq, 0.0);
+    let mut clock = oscillator::Clock::new(sample_rate);
 
-    let base = 0.1f64;
-    let env = Enveloppe::new(base, 2.0 * base, 5.0 * base, 0.5, 3.0 * base);
-    let mut snd = Sound::new(Box::new(osc), env, clock.clone());
+    // Create a sound with one oscillator and four envelopes
+    let freq_base: f64 = 110.0;
+    let mut freq: f64 = freq_base;
 
+    let mut ins = instruments::Simple::new();
+    ins.note_on(freq, 1.0);
+
+    let mut count = 0;
     let mut next_value = move || {
+        // Tick the clock
         clock.tick();
-        if let Some(v) = snd.next() {
-            v
+        // Get the time for now
+        let now = clock.get_time();
+        if let Some(sample) = ins.get_sample(now) {
+            sample
         } else {
-            snd.reset();
-            freq *= 1.05;
-            snd.oscillator.set_frequency(freq);
-            snd.next().unwrap()
+            count += 1;
+            if count <= 12 {
+                freq *= (2.0 as f64).powf(1.0 / 12.0);
+            } else {
+                freq = freq_base;
+                count = 0;
+            }
+            ins.note_on(freq, 1.0);
+            ins.get_sample(now).unwrap()
         }
     };
 
@@ -36,7 +46,7 @@ where
         config,
         move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
             for frame in data.chunks_mut(channels) {
-                let value: T = cpal::Sample::from::<generator::Sample>(&next_value());
+                let value: T = cpal::Sample::from::<oscillator::Sample>(&next_value());
                 for sample in frame.iter_mut() {
                     *sample = value;
                 }
