@@ -13,7 +13,7 @@ pub(crate) struct Simple {
 }
 
 impl Simple {
-    pub(crate) fn new() -> Box<dyn Instrument + Send> {
+    pub(crate) fn new() -> Box<dyn Instrument> {
         Box::new(Simple::new_inner())
     }
 

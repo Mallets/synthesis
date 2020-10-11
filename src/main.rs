@@ -1,4 +1,5 @@
 pub(crate) mod instruments;
+pub(crate) mod orchestra;
 pub(crate) mod oscillator;
 pub(crate) mod sound;
 
@@ -8,26 +9,26 @@ fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Result<(), anyh
 where
     T: cpal::Sample,
 {
-    let sample_rate = config.sample_rate.0 as u64;
+    let sample_rate = config.sample_rate.0;
     let channels = config.channels as usize;
 
     // Create a logical clock
-    let mut clock = oscillator::Clock::new(sample_rate);
+    let mut clock = oscillator::Clock::new(sample_rate.into());
+    let mut ensemble =
+        orchestra::Ensemble::new(clock).add_instrument("simple", instruments::Simple::new());
 
     // Create a sound with one oscillator and four envelopes
-    let freq_base: f64 = 110.0;
+    let freq_base: f64 = 165.0;
     let mut freq: f64 = freq_base;
 
-    let mut ins = instruments::Simple::new();
-    ins.note_on(freq, 1.0);
+    ensemble
+        .get_instrument("simple")
+        .unwrap()
+        .note_on(freq, 1.0);
 
     let mut count = 0;
     let mut next_value = move || {
-        // Tick the clock
-        clock.tick();
-        // Get the time for now
-        let now = clock.get_time();
-        if let Some(sample) = ins.get_sample(now) {
+        if let Some(sample) = ensemble.get_sample() {
             sample
         } else {
             count += 1;
@@ -37,8 +38,11 @@ where
                 freq = freq_base;
                 count = 0;
             }
-            ins.note_on(freq, 1.0);
-            ins.get_sample(now).unwrap()
+            ensemble
+                .get_instrument("simple")
+                .unwrap()
+                .note_on(freq, 1.0);
+            0.0
         }
     };
 
@@ -57,6 +61,20 @@ where
     stream.play()?;
 
     std::thread::sleep(std::time::Duration::from_secs(3600));
+
+    // let spec = hound::WavSpec {
+    //     channels: 1,
+    //     sample_rate: 44100,
+    //     bits_per_sample: 32,
+    //     sample_format: hound::SampleFormat::Float,
+    // };
+    // let mut writer = hound::WavWriter::create("sine.wav", spec).unwrap();
+    // for _ in 0..10 {
+    //     for _ in 0..44100 {
+    //         let sample = next_value();
+    //         writer.write_sample(sample as f32).unwrap();
+    //     }
+    // }
 
     Ok(())
 }

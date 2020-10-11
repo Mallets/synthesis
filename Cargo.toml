@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.32"
 cpal = "0.12.1"
+hound = "3.4.0"

@@ -50,16 +50,17 @@ impl Sound {
         }
 
         // Produce the sample
-        let mut sample = None;
-        for h in self.harmonics.iter_mut() {
-            if let Some(amp) = h.get_sample(now) {
-                if let Some(spl) = sample {
-                    sample = Some(spl + amp)
+        let sample = self.harmonics.iter_mut().fold(None, |sample, harmonic| {
+            if let Some(i) = harmonic.get_sample(now) {
+                if let Some(s) = sample {
+                    Some(s + i)
                 } else {
-                    sample = Some(amp)
+                    Some(i)
                 }
+            } else {
+                sample
             }
-        }
+        });
 
         if sample.is_none() {
             self.is_init = false;

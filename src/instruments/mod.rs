@@ -11,7 +11,7 @@ enum Stage {
     None,
 }
 
-pub(crate) trait Instrument {
+pub(crate) trait Instrument: Send {
     fn get_sample(&mut self, time: Time) -> Option<Sample>;
     fn note_on(&mut self, frequency: Frequency, gain: Sample);
     fn note_off(&mut self);
