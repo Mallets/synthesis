@@ -1,20 +1,20 @@
-use super::{Frequency, Oscillator, Sample, Time};
+use super::{Clock, Oscillator, Sample};
 
 /* -------- Sine -------- */
 /// A SineWave-based oscillator
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct SineWave {
     gain: Sample,
-    frequency: Frequency,
-    phase: Frequency,
+    frequency: Clock,
+    phase: Clock,
 }
 
 impl SineWave {
-    pub fn new(gain: Sample, frequency: Frequency, phase: Frequency) -> Box<dyn Oscillator> {
+    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
         Box::new(SineWave::new_inner(gain, frequency, phase))
     }
 
-    fn new_inner(gain: Sample, frequency: Frequency, phase: Frequency) -> Self {
+    fn new_inner(gain: Sample, frequency: Clock, phase: Clock) -> Self {
         Self {
             gain,
             frequency,
@@ -28,7 +28,7 @@ impl Oscillator for SineWave {
         Box::new(self.clone())
     }
 
-    fn get_amplitude(&self, time: Time) -> Sample {
+    fn get_amplitude(&self, time: Clock) -> Sample {
         let value = (2.0 * std::f64::consts::PI * self.frequency * time + self.phase).sin();
         self.gain * (value as Sample)
     }
@@ -38,12 +38,12 @@ impl Oscillator for SineWave {
         self
     }
 
-    fn set_frequency(&mut self, frequency: Frequency) -> &mut dyn Oscillator {
+    fn set_frequency(&mut self, frequency: Clock) -> &mut dyn Oscillator {
         self.frequency = frequency;
         self
     }
 
-    fn set_phase(&mut self, phase: Frequency) -> &mut dyn Oscillator {
+    fn set_phase(&mut self, phase: Clock) -> &mut dyn Oscillator {
         self.phase = phase;
         self
     }
@@ -55,11 +55,11 @@ impl Oscillator for SineWave {
 pub(crate) struct SquareWave(SineWave);
 
 impl SquareWave {
-    pub fn new(gain: Sample, frequency: Frequency, phase: Frequency) -> Box<dyn Oscillator> {
+    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
         Box::new(SquareWave::new_inner(gain, frequency, phase))
     }
 
-    fn new_inner(gain: Sample, frequency: Frequency, phase: Frequency) -> Self {
+    fn new_inner(gain: Sample, frequency: Clock, phase: Clock) -> Self {
         Self(SineWave::new_inner(gain, frequency, phase))
     }
 }
@@ -69,7 +69,7 @@ impl Oscillator for SquareWave {
         Box::new(self.clone())
     }
 
-    fn get_amplitude(&self, time: Time) -> Sample {
+    fn get_amplitude(&self, time: Clock) -> Sample {
         self.0.gain * self.0.get_amplitude(time).signum()
     }
 
@@ -78,12 +78,12 @@ impl Oscillator for SquareWave {
         self
     }
 
-    fn set_frequency(&mut self, frequency: Frequency) -> &mut dyn Oscillator {
+    fn set_frequency(&mut self, frequency: Clock) -> &mut dyn Oscillator {
         self.0.set_frequency(frequency);
         self
     }
 
-    fn set_phase(&mut self, phase: Frequency) -> &mut dyn Oscillator {
+    fn set_phase(&mut self, phase: Clock) -> &mut dyn Oscillator {
         self.0.set_phase(phase);
         self
     }

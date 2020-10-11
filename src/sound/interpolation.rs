@@ -1,5 +1,5 @@
-use crate::oscillator::{Sample, Time};
+use crate::oscillator::{Clock, Sample};
 
-pub(crate) fn linear(start: Time, end: Time, now: Time) -> Sample {
+pub(crate) fn linear(start: Clock, end: Clock, now: Clock) -> Sample {
     ((now - start) / (end - start)) as Sample
 }

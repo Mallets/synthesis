@@ -1,5 +1,5 @@
 use super::Harmonic;
-use crate::oscillator::{Sample, Time};
+use crate::oscillator::{Clock, Sample};
 
 #[derive(Clone)]
 pub(crate) struct Sound {
@@ -27,21 +27,21 @@ impl Sound {
         self
     }
 
-    pub(crate) fn get_amplitude(&self, now: Time) -> Option<Sample> {
-        let mut amplitude = None;
-        for h in self.harmonics.iter() {
-            if let Some(amp) = h.get_amplitude(now) {
-                if let Some(spl) = amplitude {
-                    amplitude = Some(spl + amp)
+    pub(crate) fn get_amplitude(&self) -> Option<Sample> {
+        self.harmonics.iter().fold(None, |amplitude, harmonic| {
+            if let Some(a) = harmonic.get_amplitude() {
+                if let Some(amp) = amplitude {
+                    Some(a + amp)
                 } else {
-                    amplitude = Some(amp)
+                    Some(a)
                 }
+            } else {
+                amplitude
             }
-        }
-        amplitude
+        })
     }
 
-    pub(crate) fn get_sample(&mut self, now: Time) -> Option<Sample> {
+    pub(crate) fn get_sample(&mut self, now: Clock) -> Option<Sample> {
         if !self.is_init {
             for h in self.harmonics.iter_mut() {
                 h.reset(now);

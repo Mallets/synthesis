@@ -1,4 +1,4 @@
-pub(crate) mod instruments;
+pub(crate) mod instrument;
 pub(crate) mod orchestra;
 pub(crate) mod oscillator;
 pub(crate) mod sound;
@@ -13,9 +13,8 @@ where
     let channels = config.channels as usize;
 
     // Create a logical clock
-    let mut clock = oscillator::Clock::new(sample_rate.into());
-    let mut ensemble =
-        orchestra::Ensemble::new(clock).add_instrument("simple", instruments::Simple::new());
+    let mut ensemble = orchestra::Ensemble::new(oscillator::Phase::new(sample_rate.into()))
+        .add_instrument("simple", instrument::Simple::new());
 
     // Create a sound with one oscillator and four envelopes
     let freq_base: f64 = 165.0;
@@ -63,7 +62,7 @@ where
     std::thread::sleep(std::time::Duration::from_secs(3600));
 
     // let spec = hound::WavSpec {
-    //     channels: 1,
+    //     channels: 2,
     //     sample_rate: 44100,
     //     bits_per_sample: 32,
     //     sample_format: hound::SampleFormat::Float,
@@ -72,6 +71,7 @@ where
     // for _ in 0..10 {
     //     for _ in 0..44100 {
     //         let sample = next_value();
+    //         writer.write_sample(sample as f32).unwrap();
     //         writer.write_sample(sample as f32).unwrap();
     //     }
     // }

@@ -1,5 +1,5 @@
 use super::{Instrument, Stage};
-use crate::oscillator::{Frequency, Sample, SineWave, SquareWave, Time};
+use crate::oscillator::{Clock, Sample, SineWave, SquareWave};
 use crate::sound::{interpolation, Envelope, Harmonic, Sound};
 
 pub(crate) struct Simple {
@@ -9,7 +9,7 @@ pub(crate) struct Simple {
     release: Sound,
     gain: Sample,
     stage: Stage,
-    last_sample: Time,
+    last_sample: Clock,
 }
 
 impl Simple {
@@ -102,7 +102,7 @@ impl Simple {
 }
 
 impl Instrument for Simple {
-    fn get_sample(&mut self, time: Time) -> Option<Sample> {
+    fn get_sample(&mut self, time: Clock) -> Option<Sample> {
         self.last_sample = time;
 
         let sample = loop {
@@ -150,7 +150,7 @@ impl Instrument for Simple {
         }
     }
 
-    fn note_on(&mut self, frequency: Frequency, gain: Sample) {
+    fn note_on(&mut self, frequency: Clock, gain: Sample) {
         self.stage = Stage::Attack;
         self.gain = gain;
 

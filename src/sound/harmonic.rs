@@ -1,5 +1,5 @@
 use super::Envelope;
-use crate::oscillator::{Oscillator, Sample, Time};
+use crate::oscillator::{Clock, Oscillator, Sample};
 
 pub(crate) struct Harmonic {
     pub(crate) oscillator: Box<dyn Oscillator>,
@@ -16,11 +16,11 @@ impl Harmonic {
         }
     }
 
-    pub(crate) fn reset(&mut self, now: Time) {
+    pub(crate) fn reset(&mut self, now: Clock) {
         self.index = Some(0);
         let mut time = now;
         for env in self.envelopes.iter_mut() {
-            env.initialize(time);
+            env.reset(time);
             time += env.duration;
         }
     }
@@ -37,18 +37,16 @@ impl Harmonic {
         self
     }
 
-    pub(crate) fn get_amplitude(&self, now: Time) -> Option<Sample> {
+    pub(crate) fn get_amplitude(&self) -> Option<Sample> {
         if let Some(idx) = self.index {
             if let Some(env) = self.envelopes.get(idx) {
-                if let Some(amp) = env.get_amplitude(now) {
-                    return Some(amp);
-                }
+                return env.get_amplitude();
             }
         }
         None
     }
 
-    pub(crate) fn get_sample(&mut self, now: Time) -> Option<Sample> {
+    pub(crate) fn get_sample(&mut self, now: Clock) -> Option<Sample> {
         // Get the eneveloppe index
         let mut idx = if let Some(idx) = self.index {
             idx
@@ -60,7 +58,7 @@ impl Harmonic {
             // Get the target envelope
             if let Some(env) = self.envelopes.get_mut(idx) {
                 // Get the evenlope amplitude
-                if let Some(amp) = env.get_amplitude(now) {
+                if let Some(amp) = env.get_sample(now) {
                     // Compute the sample value from the oscillators
                     let spl = amp * self.oscillator.get_amplitude(now);
                     return Some(spl);

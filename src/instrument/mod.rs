@@ -1,6 +1,6 @@
 mod simple;
 
-use crate::oscillator::{Frequency, Sample, Time};
+use crate::oscillator::{Clock, Sample};
 pub(crate) use simple::*;
 
 enum Stage {
@@ -12,7 +12,7 @@ enum Stage {
 }
 
 pub(crate) trait Instrument: Send {
-    fn get_sample(&mut self, time: Time) -> Option<Sample>;
-    fn note_on(&mut self, frequency: Frequency, gain: Sample);
+    fn get_sample(&mut self, time: Clock) -> Option<Sample>;
+    fn note_on(&mut self, frequency: Clock, gain: Sample);
     fn note_off(&mut self);
 }
