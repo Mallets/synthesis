@@ -3,18 +3,18 @@ use super::{Clock, Oscillator, Sample};
 /* -------- Sine -------- */
 /// A SineWave-based oscillator
 #[derive(Clone, Copy, Debug)]
-pub(crate) struct SineWave {
+pub struct SineWave {
     gain: Sample,
     frequency: Clock,
     phase: Clock,
 }
 
 impl SineWave {
-    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
-        Box::new(SineWave::new_inner(gain, frequency, phase))
+    pub fn make(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
+        Box::new(SineWave::new(gain, frequency, phase))
     }
 
-    fn new_inner(gain: Sample, frequency: Clock, phase: Clock) -> Self {
+    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Self {
         Self {
             gain,
             frequency,
@@ -25,7 +25,7 @@ impl SineWave {
 
 impl Oscillator for SineWave {
     fn clone_box(&self) -> Box<dyn Oscillator> {
-        Box::new(self.clone())
+        Box::new(*self)
     }
 
     fn get_amplitude(&self, time: Clock) -> Sample {
@@ -52,21 +52,21 @@ impl Oscillator for SineWave {
 /* -------- Square -------- */
 /// An SquareWave-based oscillator
 #[derive(Clone, Copy, Debug)]
-pub(crate) struct SquareWave(SineWave);
+pub struct SquareWave(SineWave);
 
 impl SquareWave {
-    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
-        Box::new(SquareWave::new_inner(gain, frequency, phase))
+    pub fn make(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
+        Box::new(SquareWave::new(gain, frequency, phase))
     }
 
-    fn new_inner(gain: Sample, frequency: Clock, phase: Clock) -> Self {
-        Self(SineWave::new_inner(gain, frequency, phase))
+    pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Self {
+        Self(SineWave::new(gain, frequency, phase))
     }
 }
 
 impl Oscillator for SquareWave {
     fn clone_box(&self) -> Box<dyn Oscillator> {
-        Box::new(self.clone())
+        Box::new(*self)
     }
 
     fn get_amplitude(&self, time: Clock) -> Sample {

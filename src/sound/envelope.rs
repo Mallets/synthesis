@@ -1,17 +1,17 @@
 use crate::oscillator::{Clock, Sample};
 
 #[derive(Clone, Copy)]
-pub(crate) struct Envelope {
-    pub(crate) start_amplitude: Sample,
-    pub(crate) end_amplitude: Sample,
-    pub(crate) duration: Clock,
-    pub(crate) interpolation: fn(Clock, Clock, Clock) -> Sample,
+pub struct Envelope {
+    pub start_amplitude: Sample,
+    pub end_amplitude: Sample,
+    pub duration: Clock,
+    pub interpolation: fn(Clock, Clock, Clock) -> Sample,
     last_time: Clock,
     elapsed: Clock,
 }
 
 impl Envelope {
-    pub(crate) fn new(
+    pub fn new(
         start_amplitude: Sample,
         end_amplitude: Sample,
         duration: Clock,
@@ -31,12 +31,12 @@ impl Envelope {
         }
     }
 
-    pub(crate) fn reset(&mut self, now: Clock) {
+    pub fn reset(&mut self, now: Clock) {
         self.last_time = now;
         self.elapsed = 0.0;
     }
 
-    pub(crate) fn get_amplitude(&self) -> Option<Sample> {
+    pub fn get_amplitude(&self) -> Option<Sample> {
         if self.elapsed < self.duration {
             let factor = (self.interpolation)(0.0, self.duration, self.elapsed);
             let sample = if self.start_amplitude <= self.end_amplitude {
@@ -50,7 +50,7 @@ impl Envelope {
         }
     }
 
-    pub(crate) fn get_sample(&mut self, now: Clock) -> Option<Sample> {
+    pub fn get_sample(&mut self, now: Clock) -> Option<Sample> {
         self.elapsed += (now - self.last_time).abs();
         self.last_time = now;
 

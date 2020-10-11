@@ -1,7 +1,7 @@
 mod simple;
 
 use crate::oscillator::{Clock, Sample};
-pub(crate) use simple::*;
+pub use simple::*;
 
 enum Stage {
     Attack,
@@ -11,7 +11,7 @@ enum Stage {
     None,
 }
 
-pub(crate) trait Instrument: Send {
+pub trait Instrument: Send {
     fn get_sample(&mut self, time: Clock) -> Option<Sample>;
     fn note_on(&mut self, frequency: Clock, gain: Sample);
     fn note_off(&mut self);

@@ -1,13 +1,13 @@
 mod phase;
 mod waveforms;
 
-pub(crate) use phase::*;
-pub(crate) use waveforms::*;
+pub use phase::*;
+pub use waveforms::*;
 
-pub(crate) type Clock = f64;
-pub(crate) type Sample = f32;
+pub type Clock = f64;
+pub type Sample = f32;
 
-pub(crate) trait Oscillator: Send + Sync {
+pub trait Oscillator: Send + Sync {
     fn clone_box(&self) -> Box<dyn Oscillator>;
     fn get_amplitude(&self, phase: Clock) -> Sample;
     fn set_gain(&mut self, amplitude: Sample) -> &mut dyn Oscillator;

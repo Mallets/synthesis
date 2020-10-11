@@ -1,14 +1,14 @@
 use super::Envelope;
 use crate::oscillator::{Clock, Oscillator, Sample};
 
-pub(crate) struct Harmonic {
-    pub(crate) oscillator: Box<dyn Oscillator>,
+pub struct Harmonic {
+    pub oscillator: Box<dyn Oscillator>,
     envelopes: Vec<Envelope>,
     index: Option<usize>,
 }
 
 impl Harmonic {
-    pub(crate) fn new(oscillator: Box<dyn Oscillator>) -> Self {
+    pub fn new(oscillator: Box<dyn Oscillator>) -> Self {
         Self {
             oscillator,
             envelopes: Vec::new(),
@@ -16,7 +16,7 @@ impl Harmonic {
         }
     }
 
-    pub(crate) fn reset(&mut self, now: Clock) {
+    pub fn reset(&mut self, now: Clock) {
         self.index = Some(0);
         let mut time = now;
         for env in self.envelopes.iter_mut() {
@@ -25,19 +25,19 @@ impl Harmonic {
         }
     }
 
-    pub(crate) fn add_envelope(mut self, envelope: Envelope) -> Self {
+    pub fn add_envelope(mut self, envelope: Envelope) -> Self {
         self.envelopes.push(envelope);
         self
     }
 
-    pub(crate) fn add_envelopes(mut self, envelopes: &[Envelope]) -> Self {
+    pub fn add_envelopes(mut self, envelopes: &[Envelope]) -> Self {
         envelopes.iter().for_each(|env| {
-            self.envelopes.push(env.clone());
+            self.envelopes.push(*env);
         });
         self
     }
 
-    pub(crate) fn get_amplitude(&self) -> Option<Sample> {
+    pub fn get_amplitude(&self) -> Option<Sample> {
         if let Some(idx) = self.index {
             if let Some(env) = self.envelopes.get(idx) {
                 return env.get_amplitude();
@@ -46,13 +46,9 @@ impl Harmonic {
         None
     }
 
-    pub(crate) fn get_sample(&mut self, now: Clock) -> Option<Sample> {
+    pub fn get_sample(&mut self, now: Clock) -> Option<Sample> {
         // Get the eneveloppe index
-        let mut idx = if let Some(idx) = self.index {
-            idx
-        } else {
-            return None;
-        };
+        let mut idx = self.index?;
 
         loop {
             // Get the target envelope
@@ -81,7 +77,7 @@ impl Clone for Harmonic {
         Self {
             oscillator: self.oscillator.clone_box(),
             envelopes: self.envelopes.clone(),
-            index: self.index.clone(),
+            index: self.index,
         }
     }
 }

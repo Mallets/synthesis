@@ -1,7 +1,7 @@
-pub(crate) mod instrument;
-pub(crate) mod orchestra;
-pub(crate) mod oscillator;
-pub(crate) mod sound;
+pub mod instrument;
+pub mod orchestra;
+pub mod oscillator;
+pub mod sound;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
@@ -13,8 +13,8 @@ where
     let channels = config.channels as usize;
 
     // Create a logical clock
-    let mut ensemble = orchestra::Ensemble::new(oscillator::Phase::new(sample_rate.into()))
-        .add_instrument("simple", instrument::Simple::new());
+    let mut ensemble = orchestra::Orchestra::new(oscillator::Phase::new(sample_rate.into()))
+        .add_instrument("simple", instrument::Simple::make(0.025));
 
     // Create a sound with one oscillator and four envelopes
     let freq_base: f64 = 165.0;
