@@ -1,6 +1,7 @@
 use super::{Instrument, Stage};
 use crate::oscillator::{Clock, Sample, SineWave, SquareWave};
 use crate::sound::{interpolation, Envelope, Harmonic, Sound};
+use std::convert::Into;
 
 pub struct Simple {
     attack: Sound,
@@ -13,14 +14,10 @@ pub struct Simple {
 }
 
 impl Simple {
-    pub fn make(slot: Clock) -> Box<dyn Instrument> {
-        Box::new(Simple::new(slot))
-    }
-
     pub fn new(slot: Clock) -> Self {
         let attack = Sound::new()
             .add_harmonic(
-                Harmonic::new(SineWave::make(1.0, 0.0, 0.0)).add_envelope(Envelope::new(
+                Harmonic::new(SineWave::new(1.0, 0.0, 0.0).into()).add_envelope(Envelope::new(
                     0.0,
                     1.0,
                     slot,
@@ -28,64 +25,55 @@ impl Simple {
                 )),
             )
             .add_harmonic(
-                Harmonic::new(SquareWave::make(0.01, 0.0, 0.0))
+                Harmonic::new(SquareWave::new(0.01, 0.0, 0.0).into())
                     .add_envelope(Envelope::new(0.0, 0.5, slot / 2.0, interpolation::linear))
                     .add_envelope(Envelope::new(0.5, 0.01, slot / 2.0, interpolation::linear)),
             );
 
-        let decay = Sound::new()
-            .add_harmonic(
-                Harmonic::new(SineWave::make(1.0, 0.0, 0.0)).add_envelope(Envelope::new(
-                    1.0,
-                    0.5,
-                    slot,
-                    interpolation::linear,
-                )),
-            )
-            .add_harmonic(
-                Harmonic::new(SquareWave::make(0.01, 0.0, 0.0)).add_envelope(Envelope::new(
-                    0.01,
-                    0.01,
-                    slot,
-                    interpolation::linear,
-                )),
-            );
+        let decay =
+            Sound::new()
+                .add_harmonic(
+                    Harmonic::new(SineWave::new(1.0, 0.0, 0.0).into()).add_envelope(Envelope::new(
+                        1.0,
+                        0.5,
+                        slot,
+                        interpolation::linear,
+                    )),
+                )
+                .add_harmonic(
+                    Harmonic::new(SquareWave::new(0.01, 0.0, 0.0).into())
+                        .add_envelope(Envelope::new(0.01, 0.01, slot, interpolation::linear)),
+                );
 
-        let sustain = Sound::new()
-            .add_harmonic(
-                Harmonic::new(SineWave::make(1.0, 0.0, 0.0)).add_envelope(Envelope::new(
-                    0.5,
-                    0.5,
-                    slot,
-                    interpolation::linear,
-                )),
-            )
-            .add_harmonic(
-                Harmonic::new(SquareWave::make(0.01, 0.0, 0.0)).add_envelope(Envelope::new(
-                    0.01,
-                    0.01,
-                    slot,
-                    interpolation::linear,
-                )),
-            );
+        let sustain =
+            Sound::new()
+                .add_harmonic(
+                    Harmonic::new(SineWave::new(1.0, 0.0, 0.0).into()).add_envelope(Envelope::new(
+                        0.5,
+                        0.5,
+                        slot,
+                        interpolation::linear,
+                    )),
+                )
+                .add_harmonic(
+                    Harmonic::new(SquareWave::new(0.01, 0.0, 0.0).into())
+                        .add_envelope(Envelope::new(0.01, 0.01, slot, interpolation::linear)),
+                );
 
-        let release = Sound::new()
-            .add_harmonic(
-                Harmonic::new(SineWave::make(1.0, 0.0, 0.0)).add_envelope(Envelope::new(
-                    0.5,
-                    0.0,
-                    slot,
-                    interpolation::linear,
-                )),
-            )
-            .add_harmonic(
-                Harmonic::new(SquareWave::make(0.01, 0.0, 0.0)).add_envelope(Envelope::new(
-                    0.01,
-                    0.0,
-                    slot,
-                    interpolation::linear,
-                )),
-            );
+        let release =
+            Sound::new()
+                .add_harmonic(
+                    Harmonic::new(SineWave::new(1.0, 0.0, 0.0).into()).add_envelope(Envelope::new(
+                        0.5,
+                        0.0,
+                        slot,
+                        interpolation::linear,
+                    )),
+                )
+                .add_harmonic(
+                    Harmonic::new(SquareWave::new(0.01, 0.0, 0.0).into())
+                        .add_envelope(Envelope::new(0.01, 0.0, slot, interpolation::linear)),
+                );
 
         Self {
             attack,
@@ -200,5 +188,11 @@ impl Instrument for Simple {
                 // Do nothing
             }
         };
+    }
+}
+
+impl Into<Box<dyn Instrument>> for Simple {
+    fn into(self) -> Box<dyn Instrument> {
+        Box::new(self)
     }
 }

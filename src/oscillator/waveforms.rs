@@ -1,4 +1,5 @@
 use super::{Clock, Oscillator, Sample};
+use std::convert::Into;
 
 /* -------- Sine -------- */
 /// A SineWave-based oscillator
@@ -10,10 +11,6 @@ pub struct SineWave {
 }
 
 impl SineWave {
-    pub fn make(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
-        Box::new(SineWave::new(gain, frequency, phase))
-    }
-
     pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Self {
         Self {
             gain,
@@ -33,32 +30,31 @@ impl Oscillator for SineWave {
         self.gain * (value as Sample)
     }
 
-    fn set_gain(&mut self, gain: Sample) -> &mut dyn Oscillator {
+    fn set_gain(&mut self, gain: Sample) {
         self.gain = gain;
-        self
     }
 
-    fn set_frequency(&mut self, frequency: Clock) -> &mut dyn Oscillator {
+    fn set_frequency(&mut self, frequency: Clock) {
         self.frequency = frequency;
-        self
     }
 
-    fn set_phase(&mut self, phase: Clock) -> &mut dyn Oscillator {
+    fn set_phase(&mut self, phase: Clock) {
         self.phase = phase;
-        self
+    }
+}
+
+impl Into<Box<dyn Oscillator>> for SineWave {
+    fn into(self) -> Box<dyn Oscillator> {
+        Box::new(self)
     }
 }
 
 /* -------- Square -------- */
-/// An SquareWave-based oscillator
+/// A SquareWave-based oscillator
 #[derive(Clone, Copy, Debug)]
 pub struct SquareWave(SineWave);
 
 impl SquareWave {
-    pub fn make(gain: Sample, frequency: Clock, phase: Clock) -> Box<dyn Oscillator> {
-        Box::new(SquareWave::new(gain, frequency, phase))
-    }
-
     pub fn new(gain: Sample, frequency: Clock, phase: Clock) -> Self {
         Self(SineWave::new(gain, frequency, phase))
     }
@@ -73,18 +69,21 @@ impl Oscillator for SquareWave {
         self.0.gain * self.0.get_amplitude(time).signum()
     }
 
-    fn set_gain(&mut self, gain: Sample) -> &mut dyn Oscillator {
+    fn set_gain(&mut self, gain: Sample) {
         self.0.set_gain(gain);
-        self
     }
 
-    fn set_frequency(&mut self, frequency: Clock) -> &mut dyn Oscillator {
+    fn set_frequency(&mut self, frequency: Clock) {
         self.0.set_frequency(frequency);
-        self
     }
 
-    fn set_phase(&mut self, phase: Clock) -> &mut dyn Oscillator {
+    fn set_phase(&mut self, phase: Clock) {
         self.0.set_phase(phase);
-        self
+    }
+}
+
+impl Into<Box<dyn Oscillator>> for SquareWave {
+    fn into(self) -> Box<dyn Oscillator> {
+        Box::new(self)
     }
 }
